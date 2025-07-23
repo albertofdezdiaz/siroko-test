@@ -39,7 +39,7 @@ class Item
 
     public function combinable(Item $other): bool
     {
-        return $this->productId() === $other->productId()
+        return $this->productId()->equals($other->productId())
             && $this->cartId()->equals($other->cartId())
         ;
     }

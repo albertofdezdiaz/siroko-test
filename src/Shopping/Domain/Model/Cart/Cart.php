@@ -7,6 +7,7 @@ use App\Shared\Domain\Model\AggregateRoot;
 use App\Shopping\Domain\Model\Cart\ItemAdded;
 use App\Shopping\Domain\Model\Cart\CartStatus;
 use App\Shopping\Domain\Model\Cart\ItemCollection;
+use App\Shopping\Domain\Model\Cart\ItemNotFoundException;
 use App\Shopping\Domain\Model\Cart\NonActiveCartException;
 
 class Cart
@@ -68,6 +69,32 @@ class Cart
         );
     }
 
+    public function removeItem(ProductId $productId)
+    {
+        if ($this->status() !== CartStatus::Active) {
+            throw new NonActiveCartException($this->id());
+        }
+
+        $item = new Item(
+            quantity: 0,
+            productId: $productId,
+            cartId: $this->id()
+        );
+
+        $itemFound = $this->items()->findCombinable($item);
+
+        if (null === $itemFound) {
+            throw new ItemNotFoundException($this->id());
+        }
+
+        $this->recordApplyAndPublish(
+            new ItemRemoved(
+                cartId: $this->id(),
+                item: $itemFound
+            )
+        );
+    }
+
     public function applyCartCreated(Cartcreated $event)
     {
         $this->status = CartStatus::Active;
@@ -77,6 +104,11 @@ class Cart
     public function applyItemAdded(ItemAdded $event)
     {
         $this->items->add($event->item());
+    }
+
+    public function applyItemRemoved(ItemRemoved $event)
+    {
+        $this->items->remove($event->item());
     }
 
     public function __toString(): string

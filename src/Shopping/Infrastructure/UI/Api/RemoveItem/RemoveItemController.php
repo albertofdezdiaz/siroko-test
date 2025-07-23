@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Shopping\Infrastructure\UI\Api\AddItem;
+namespace App\Shopping\Infrastructure\UI\Api\RemoveItem;
 
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -8,42 +8,41 @@ use App\Shopping\Domain\Model\Cart\CartId;
 use App\Shopping\Domain\Model\Cart\ProductId;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Shopping\Application\Cart\AddItem\AddItemRequest;
-use App\Shopping\Application\Cart\AddItem\AddItemService;
+use App\Shopping\Application\Cart\RemoveItem\RemoveItemRequest;
+use App\Shopping\Application\Cart\RemoveItem\RemoveItemService;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use App\Shopping\Infrastructure\UI\Api\AddItem\AddItemRequest as ApiRequest;
-use App\Shopping\Infrastructure\UI\Api\AddItem\AddItemResponse as ApiResponse;
+use App\Shopping\Infrastructure\UI\Api\RemoveItem\RemoveItemRequest as ApiRequest;
+use App\Shopping\Infrastructure\UI\Api\RemoveItem\RemoveItemResponse as ApiResponse;
 
-#[Route('/carts/{cartId}/add-item', name: 'api_carts_add_item', methods: ['PUT'])]
+#[Route('/carts/{cartId}/remove-item', name: 'api_carts_remove_item', methods: ['PUT'])]
 #[OA\Put(
-    summary: "Add a product to an active cart",
-    description: "Add quantity units of product to an active cart. Throw error on non active carts.",
+    summary: "Remove a product from an active cart",
+    description: "Remove product from an active cart. Throw error on non active carts or not added products.",
     tags: ['Shopping']
 )]
 #[OA\Response(
     response: 200,
-    description: 'Returns item added',
+    description: 'Returns item removed',
     content: new Model(type: ApiResponse::class)
 )]
-class AddItemController extends AbstractController
+class RemoveItemController extends AbstractController
 {
     public function __invoke(
         string $cartId,
         #[MapRequestPayload()]
         ApiRequest $request,
-        AddItemService $createCart
+        RemoveItemService $createCart
     ): JsonResponse {
         $response = $createCart(
-            new AddItemRequest(
+            new RemoveItemRequest(
                 cartId: new CartId($cartId),
-                productId: new ProductId($request->productId),
-                quantity: $request->quantity
+                productId: new ProductId($request->productId)
             )
         );
 
         return $this->json(
-            new AddItemResponse(
+            new RemoveItemResponse(
                 cartId: (string) $response->item->cartId(),
                 productId: (string) $response->item->productId(),
                 quantity: $response->item->quantity(),

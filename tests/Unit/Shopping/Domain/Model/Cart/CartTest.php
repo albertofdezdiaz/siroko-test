@@ -9,7 +9,9 @@ use App\Shopping\Domain\Model\Cart\ItemAdded;
 use App\Shopping\Domain\Model\Cart\ProductId;
 use App\Shopping\Domain\Model\Cart\CartStatus;
 use App\Shopping\Domain\Model\Cart\CartCreated;
+use App\Shopping\Domain\Model\Cart\ItemRemoved;
 use App\Shared\Domain\Event\DomainEventPublisher;
+use App\Shopping\Domain\Model\Cart\ItemNotFoundException;
 use App\Tests\Unit\Shopping\Domain\Model\Cart\CartMother;
 use App\Shopping\Domain\Model\Cart\NonActiveCartException;
 use App\Tests\Unit\Shared\Domain\Event\SpyDomainEventSubscriber;
@@ -82,5 +84,68 @@ class CartTest extends TestCase
         );
 
         $cart->addItem($item);
+    }
+
+    public function testRemoveItem()
+    {
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Active->value
+        );
+
+        $item = ItemMother::from(
+            cartId: $cart->id(),
+            productId: ProductId::generate(),
+            quantity: 2
+        );
+
+        $cart->addItem($item);
+
+        $this->assertCount(1, $cart->items());
+
+        $cart->removeItem($item->productId());
+
+        $this->assertCount(0, $cart->items());
+        $this->assertFalse($cart->items()->contains($item));
+
+        $lastEvent = $this->spySubscriber->lastEvent();
+
+        $this->assertNotNull($lastEvent);
+        $this->assertTrue($lastEvent instanceof ItemRemoved);
+        $this->assertTrue($cart->id()->equals($lastEvent->cartId()));
+        $this->assertTrue($item->equals($lastEvent->item()));
+    }
+
+    public function testRemoveItemOnNonActiveCart()
+    {
+        $this->expectException(NonActiveCartException::class);
+
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Processed->value
+        );
+
+        $item = ItemMother::from(
+            cartId: $cart->id(),
+            productId: ProductId::generate(),
+            quantity: 2
+        );
+
+        $cart->removeItem($item->productId());
+    }
+
+    public function testRemoveItemOnNotAddedItem()
+    {
+        $this->expectException(ItemNotFoundException::class);
+
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Active->value
+        );
+
+        $item = ItemMother::from(
+            cartId: $cart->id(),
+            productId: ProductId::generate(),
+            quantity: 2
+        );
+
+        $cart->removeItem($item->productId());
     }
 }
