@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="App\Shopping\Domain\Model\Payment\Payment" table="payment">
+        <embedded name="id" class="App\Shopping\Domain\Model\Payment\PaymentId" use-column-prefix="false" />
+        <embedded name="cartId" class="App\Shopping\Domain\Model\Cart\CartId" use-column-prefix="true" column-prefix="cart_" />
+        <field name="status" type="string" length="20" enum-type="App\Shopping\Domain\Model\Payment\PaymentStatus" nullable="true"/>
+        <field name="createdAt" type="datetime_immutable" column="created_at" nullable="false" />
+    </entity>
+</doctrine-mapping>
