@@ -10,6 +10,7 @@ use App\Shopping\Domain\Model\Cart\ProductId;
 use App\Shopping\Domain\Model\Cart\CartStatus;
 use App\Shopping\Domain\Model\Cart\CartCreated;
 use App\Shopping\Domain\Model\Cart\ItemRemoved;
+use App\Shopping\Domain\Model\Cart\ItemUpdated;
 use App\Shared\Domain\Event\DomainEventPublisher;
 use App\Shopping\Domain\Model\Cart\ItemNotFoundException;
 use App\Tests\Unit\Shopping\Domain\Model\Cart\CartMother;
@@ -147,5 +148,99 @@ class CartTest extends TestCase
         );
 
         $cart->removeItem($item->productId());
+    }
+
+    public function testUpdateItem()
+    {
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Active->value
+        );
+
+        $item = ItemMother::from(
+            cartId: $cart->id(),
+            productId: ProductId::generate(),
+            quantity: 2
+        );
+
+        $cart->addItem($item);
+
+        $this->assertCount(1, $cart->items());
+
+        $cart->updateItem($item->productId(), 5);
+
+        $this->assertCount(1, $cart->items());
+        
+        $this->assertEquals(5, $cart->items()->findCombinable($item)?->quantity());
+
+        $lastEvent = $this->spySubscriber->lastEvent();
+
+        $this->assertNotNull($lastEvent);
+        $this->assertTrue($lastEvent instanceof ItemUpdated);
+        $this->assertTrue($cart->id()->equals($lastEvent->cartId()));
+        $this->assertTrue($item->productId()->equals($lastEvent->item()->productId()));
+    }
+
+    public function testUpdateItemOnNonActiveCart()
+    {
+        $this->expectException(NonActiveCartException::class);
+
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Processed->value
+        );
+
+        $item = ItemMother::from(
+            cartId: $cart->id(),
+            productId: ProductId::generate(),
+            quantity: 2
+        );
+
+        $cart->items()->add($item);
+
+        $cart->updateItem($item->productId(), 1);
+    }
+
+    public function testUpdateItemOnNotAddedItem()
+    {
+        $this->expectException(ItemNotFoundException::class);
+
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Active->value
+        );
+
+        $item = ItemMother::from(
+            cartId: $cart->id(),
+            productId: ProductId::generate(),
+            quantity: 2
+        );
+
+        $cart->updateItem($item->productId(), 1);
+    }
+
+    public function testUpdateItemToZeroQuantityEqualsToRemove()
+    {
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Active->value
+        );
+
+        $item = ItemMother::from(
+            cartId: $cart->id(),
+            productId: ProductId::generate(),
+            quantity: 2
+        );
+
+        $cart->addItem($item);
+
+        $this->assertCount(1, $cart->items());
+
+        $cart->updateItem($item->productId(), 0);
+
+        $this->assertCount(0, $cart->items());
+        
+        $lastEvent = $this->spySubscriber->lastEvent();
+
+        $this->assertNotNull($lastEvent);
+        $this->assertTrue($lastEvent instanceof ItemRemoved);
+        $this->assertTrue($cart->id()->equals($lastEvent->cartId()));
+        $this->assertTrue($item->equals($lastEvent->item()));
     }
 }
