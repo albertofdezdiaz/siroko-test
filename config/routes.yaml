@@ -4,3 +4,10 @@ shared-api:
         namespace: App\Shared\Infrastructure\UI\Api
     type: attribute
     prefix: '/api'
+
+shopping-api:
+    resource:
+        path: ../src/Shopping/Infrastructure/UI/Api/
+        namespace: App\Shopping\Infrastructure\UI\Api
+    type: attribute
+    prefix: '/api'

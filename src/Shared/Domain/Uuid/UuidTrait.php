@@ -32,4 +32,9 @@ trait UuidTrait
     {
         return $this->id();
     }
+
+    public function toBinary()
+    {
+        return Uuid::fromString((string) $this->id())->toBinary();
+    }
 }

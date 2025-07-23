@@ -88,10 +88,14 @@ migrate:
 test: | test-acceptance test-unit
 
 test-unit: ## Execute unit tests
+	@$(PHP_TEST) bin/console doc:sch:drop -e test --force -q
+	@$(PHP_TEST) bin/console doc:sch:upd -e test --force -q
 	@$(PHP_TEST) bin/phpunit
 
 test-acceptance: ## Execute acceptance tests
 	@$(eval options ?=)
+	@$(PHP_TEST) bin/console doc:sch:drop -e test --force -q 
+	@$(PHP_TEST) bin/console doc:sch:upd -e test --force -q
 	@$(PHP_TEST) vendor/bin/behat $(options)
 
 reset-test-cache: ## Clear testing cache

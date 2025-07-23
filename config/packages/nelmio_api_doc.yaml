@@ -7,6 +7,8 @@ nelmio_api_doc:
         tags:
             - name: 'Health Check'
               description: 'Endpoints related to verifying the status and availability of the service.'
+            - name: 'Shopping'
+              description: 'Endpoints related to buy staff-'
     areas: # to filter documented areas
         path_patterns:
             - ^/api(?!/openapi$) # Accepts routes under /api except /api/doc

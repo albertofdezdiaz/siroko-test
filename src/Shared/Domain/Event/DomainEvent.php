@@ -45,8 +45,4 @@ abstract class DomainEvent
     {
         return sprintf("%s.%s", static::$context, static::$eventName);
     }
-
-    abstract public function payload(): ?array;
-
-    abstract public static function rebuildFromPayload(DomainEventId $id, \DateTimeImmutable $occurredOn, ?array $payload): static;
 }

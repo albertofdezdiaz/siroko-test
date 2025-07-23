@@ -20,10 +20,13 @@ En el flujo de __pago__ tenemos el comando que desencadena el pago del carrito a
 ## Tecnología utilizada.
 Hemos usado de base Symfony 7.3 con docker (dunglas/symfony-docker) y una arquitectura hexagonal separada en bounded context lo que es bastante sencillo pero permite que estemos desacoplados del framework y nos deja agilidad para cambiar a una arquitectura más compleja en el futuro como CQRS si fuera necesario.
 
-Por motivos de tiempo hemos simplificado las tecnologias a usar especialmente a nivel de comunicación y gestión de eventos. Sería interesante añadir algunas características al sistema:
+Por motivos de tiempo hemos simplificado las tecnologias utilizadas a todos los niveles: comunicación, gestión de eventos, persistencia, ... 
+
+Sería interesante añadir algunas características al sistema:
 - Persistir los eventos antes de publicarlos por si hubiera algun problema poder recuperar el estado del sistema
 - Usar una cola para la publicación de eventos como rabbitmq
 - Debería de modificarse la forma en la que se almacenan los datos en base de datos para usar transacciones, idealmente, una única transacción por "request".
+- 
 
 ## Instrucciones para levantar el entorno con `docker -compose up`.  
 Se ha creado un fichero Makefile con los comandos necesarios para levantar el entorno. La mayoría se explican ellos mismos.
