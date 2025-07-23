@@ -1,0 +1,4 @@
+app.redocly:
+    path: /openapi
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.redocly }
