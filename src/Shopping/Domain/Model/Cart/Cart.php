@@ -7,6 +7,8 @@ use App\Shared\Domain\Model\AggregateRoot;
 use App\Shopping\Domain\Model\Cart\ItemAdded;
 use App\Shopping\Domain\Model\Cart\ProductId;
 use App\Shopping\Domain\Model\Cart\CartStatus;
+use App\Shopping\Domain\Model\Payment\Payment;
+use App\Shopping\Domain\Model\Cart\CartProcessed;
 use App\Shopping\Domain\Model\Cart\ItemCollection;
 use App\Shopping\Domain\Model\Cart\ItemNotFoundException;
 use App\Shopping\Domain\Model\Cart\NonActiveCartException;
@@ -52,6 +54,16 @@ class Cart
         $this->recordApplyAndPublish(
             new CartCreated(
                 cartId: $this->id(),
+            )
+        );
+    }
+
+    public function process(Payment $payment)
+    {
+        $this->recordApplyAndPublish(
+            new CartProcessed(
+                cartId: $this->id(),
+                paymentId: $payment->id()
             )
         );
     }
@@ -126,10 +138,15 @@ class Cart
         );
     }
 
-    public function applyCartCreated(Cartcreated $event)
+    public function applyCartCreated(CartCreated $event)
     {
         $this->status = CartStatus::Active;
         $this->createdAt = $event->occurredOn();
+    }
+
+    public function applyCartProcessed(CartProcessed $event)
+    {
+        $this->status = CartStatus::Processed;
     }
 
     public function applyItemAdded(ItemAdded $event)

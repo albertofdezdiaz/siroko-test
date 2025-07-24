@@ -11,10 +11,14 @@ use App\Shopping\Domain\Model\Cart\CartStatus;
 use App\Shopping\Domain\Model\Cart\CartCreated;
 use App\Shopping\Domain\Model\Cart\ItemRemoved;
 use App\Shopping\Domain\Model\Cart\ItemUpdated;
+use App\Shopping\Domain\Model\Payment\PaymentId;
 use App\Shared\Domain\Event\DomainEventPublisher;
+use App\Shopping\Domain\Model\Cart\CartProcessed;
+use App\Shopping\Domain\Model\Payment\PaymentStatus;
 use App\Shopping\Domain\Model\Cart\ItemNotFoundException;
 use App\Tests\Unit\Shopping\Domain\Model\Cart\CartMother;
 use App\Shopping\Domain\Model\Cart\NonActiveCartException;
+use App\Tests\Unit\Shopping\Domain\Model\Payment\PaymentMother;
 use App\Tests\Unit\Shared\Domain\Event\SpyDomainEventSubscriber;
 
 class CartTest extends TestCase
@@ -242,5 +246,27 @@ class CartTest extends TestCase
         $this->assertTrue($lastEvent instanceof ItemRemoved);
         $this->assertTrue($cart->id()->equals($lastEvent->cartId()));
         $this->assertTrue($item->equals($lastEvent->item()));
+    }
+
+    public function testProcess()
+    {
+        $cart = CartMother::fromStatus(
+            status: CartStatus::Active->value
+        );
+
+        $payment = PaymentMother::from(
+            paymentId: PaymentId::generate(),
+            cartId: $cart->id(),
+            status: PaymentStatus::Paid
+        );
+
+        $cart->process($payment);
+
+        $lastEvent = $this->spySubscriber->lastEvent();
+
+        $this->assertNotNull($lastEvent);
+        $this->assertTrue($lastEvent instanceof CartProcessed);
+        $this->assertTrue($cart->id()->equals($lastEvent->cartId()));
+        $this->assertTrue($payment->id()->equals($lastEvent->paymentId()));
     }
 }
