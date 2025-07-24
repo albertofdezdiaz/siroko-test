@@ -17,8 +17,12 @@ El flujo de gestión del carrito se ha simplificado dado el alcance del ejercici
 
 En el flujo de __pago__ tenemos el comando que desencadena el pago del carrito actual y un proveedor de pago externo que nos notifica mediante un evento de que el pago se ha realizado correctamente. Por razones de tiempo, dejamos de lado la implementación real de la conexión con este proveedor externo y simularemos el pago mediante un comando. Esto permitirá obtener el evento de carrito procesado y desencadenar la creación del __pedido__.
 
+[Imagen](docs/modelado.jpeg)
+
 ## Tecnología utilizada.
 Hemos usado de base Symfony 7.3 con docker (dunglas/symfony-docker) y una arquitectura hexagonal separada en bounded context lo que es bastante sencillo pero permite que estemos desacoplados del framework y nos deja agilidad para cambiar a una arquitectura más compleja en el futuro como CQRS si fuera necesario.
+
+Para la base de datos hemos usado PostgreSQL.
 
 Por motivos de tiempo hemos simplificado las tecnologias utilizadas a todos los niveles: comunicación, gestión de eventos, persistencia, ... 
 
@@ -26,7 +30,7 @@ Sería interesante añadir algunas características al sistema:
 - Persistir los eventos antes de publicarlos por si hubiera algun problema poder recuperar el estado del sistema
 - Usar una cola para la publicación de eventos como rabbitmq
 - Debería de modificarse la forma en la que se almacenan los datos en base de datos para usar transacciones, idealmente, una única transacción por "request".
-- 
+- Securizacion de la API y de la documentación
 
 ## Instrucciones para levantar el entorno con `docker -compose up`.  
 Se ha creado un fichero Makefile con los comandos necesarios para levantar el entorno. La mayoría se explican ellos mismos.
@@ -35,6 +39,11 @@ Se ha creado un fichero Makefile con los comandos necesarios para levantar el en
 - `make build`
 - `make up`
 - `make down`
+
+Para iniciar el proyecto basta con hacer `make start` (o dependiendo de los permisos `sudo make start`)
+
+Para probar el proyecto en http://localhost es necesario hacer las migraciones de la base de datos tras el `make start`:
+- `make migrate`
 
 ## Comando para lanzar los tests.
 Para la parte de tests hemos usado Behat para aceptación y Phpunit para los tests unitarios.
