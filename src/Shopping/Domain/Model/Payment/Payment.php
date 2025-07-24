@@ -29,6 +29,11 @@ class Payment
         return $this->id;
     }
 
+    public function cartId(): ?CartId
+    {
+        return $this->cartId;
+    }
+
     public function status(): PaymentStatus
     {
         return $this->status;
@@ -53,11 +58,29 @@ class Payment
         );
     }
 
-    public function applyPaymentCreated(Paymentcreated $event)
+    public function pay()
+    {
+        if ($this->status() === PaymentStatus::Paid) {
+            throw new PaymentAlreadyPaidException($this->id());
+        }
+
+        $this->recordApplyAndPublish(
+            new PaymentPaid(
+                paymentId: $this->id()
+            )
+        );
+    }
+
+    public function applyPaymentCreated(PaymentCreated $event)
     {
         $this->cartId = $event->cartId();
         $this->status = PaymentStatus::Pending;
         $this->createdAt = $event->occurredOn();
+    }
+
+    public function applyPaymentPaid(PaymentPaid $event)
+    {
+        $this->status = PaymentStatus::Paid;
     }
 
     public function __toString(): string

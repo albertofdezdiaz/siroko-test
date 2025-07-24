@@ -2,6 +2,7 @@
 
 namespace App\Tests\Unit\Shopping\Domain\Model\Payment;
 
+use App\Shopping\Domain\Model\Cart\CartId;
 use App\Shopping\Domain\Model\Payment\Payment;
 use App\Shopping\Domain\Model\Payment\PaymentId;
 use App\Shopping\Domain\Model\Payment\PaymentStatus;
@@ -11,23 +12,26 @@ class PaymentMother
     public static function fromStatus(string $status)
     {
         return self::from(
-            cartId: PaymentId::generate(),
+            paymentId: PaymentId::generate(),
+            cartId: CartId::generate(),
             status: PaymentStatus::tryFrom($status),
         );
     }
 
-    public static function fromStatusAndId(string $status, string $cartId)
+    public static function fromStatusAndId(string $status, string $paymentId)
     {
         return self::from(
-            cartId: new PaymentId($cartId),
+            paymentId: new PaymentId($paymentId),
+            cartId: CartId::generate(),
             status: PaymentStatus::tryFrom($status),
         );
     }
 
-    public static function from(PaymentId $cartId, PaymentStatus $status)
+    public static function from(PaymentId $paymentId, CartId $cartId, PaymentStatus $status)
     {
         $cart = new Payment(
-            id: $cartId,
+            id: $paymentId,
+            cartId: $cartId,
             status: $status,
             createdAt: new \DateTimeImmutable('now')
         );
@@ -38,7 +42,8 @@ class PaymentMother
     public static function random()
     {
         return self::from(
-            cartId: PaymentId::generate(),
+            paymentId: PaymentId::generate(),
+            cartId: CartId::generate(),
             status: rand(0, 1) ? PaymentStatus::Pending : PaymentStatus::Paid
         );
     }
