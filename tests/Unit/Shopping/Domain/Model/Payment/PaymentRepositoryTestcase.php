@@ -2,7 +2,6 @@
 
 namespace App\Tests\Unit\Shopping\Domain\Model\Payment;
 
-use App\Shopping\Domain\Model\Payment\PaymentStatus;
 use App\Shopping\Domain\Model\Payment\PaymentRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -12,34 +11,34 @@ abstract class PaymentRepositoryTestcase extends KernelTestCase
     {   
         $repository = $this->createSUT();
 
-        $cart = PaymentMother::random();
+        $payment = PaymentMother::random();
 
-        $this->assertNull($repository->find($cart->id()));
+        $this->assertNull($repository->find($payment->id()));
 
-        $repository->add($cart);
+        $repository->add($payment);
 
-        $recoverPayment = $repository->find($cart->id());
+        $recoverPayment = $repository->find($payment->id());
 
         $this->assertNotNull($recoverPayment);
-        $this->assertEquals($cart->id(), $recoverPayment->id());
+        $this->assertEquals($payment->id(), $recoverPayment->id());
     }
 
     public function testRemovePaymentToRepository()
     {   
         $repository = $this->createSUT();
 
-        $cart = PaymentMother::random();
+        $payment = PaymentMother::random();
 
-        $repository->add($cart);
+        $repository->add($payment);
 
-        $recoverPayment = $repository->find($cart->id());
+        $recoverPayment = $repository->find($payment->id());
 
         $this->assertNotNull($recoverPayment);
-        $this->assertEquals($cart->id(), $recoverPayment->id());
+        $this->assertEquals($payment->id(), $recoverPayment->id());
 
-        $repository->remove($cart);
+        $repository->remove($payment);
 
-        $this->assertNull($repository->find($cart->id()));
+        $this->assertNull($repository->find($payment->id()));
     }
 
     abstract protected function createSUT(): PaymentRepository;
